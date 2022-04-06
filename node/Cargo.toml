@@ -31,10 +31,13 @@ jsonrpc-core = "18.0.0"
 ## Local Dependencies
 invarch-runtime = { path = "../runtime" }
 
+
 ## Substrate Dependencies
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18" }
 frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18" }
+pallet-contracts-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18"}
+pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18"}
 
 ## Substrate Client Dependencies
 sc-basic-authorship = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18" }
