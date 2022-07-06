@@ -29,6 +29,7 @@ pallet-ipf = { git = "https://github.com/InvArch/InvArch-Frames", branch = "main
 pallet-inv4 = { git = "https://github.com/InvArch/InvArch-Frames", branch = "main",  default-features = false }
 #pallet-inv4 = { path = "../../InvArch-Pallet-Library/INV4/pallet-inv4", default-features = false }
 #pallet-ipf = { path = "../../InvArch-Pallet-Library/INV4/pallet-ipf", default-features = false }
+pallet-ip-staking = { path = "../../InvArch-Frames/OCIF/ip-staking", default-features = false }
 
 ## Parity's Unique + RMRK Pallets
 pallet-rmrk-core = { git = "https://github.com/Phala-Network/rmrk-substrate", default-features = false, branch = "polkadot-v0.9.24" }
@@ -162,6 +163,7 @@ std = [
     "orml-vesting/std",
     "pallet-ipf/std",
     "pallet-inv4/std",
+    "pallet-ip-staking/std"
 ]
 
 runtime-benchmarks = [ 

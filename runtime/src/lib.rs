@@ -77,6 +77,9 @@ pub use pallet_ipf as ipf;
 /// Import the inv4 pallet.
 pub use pallet_inv4 as inv4;
 
+/// Import the OCIF pallets
+pub use pallet_ip_staking as ip_staking;
+
 use inv4::ipl::LicenseList;
 
 // Weights
@@ -1132,6 +1135,10 @@ impl pallet_preimage::Config for Runtime {
     type ByteDeposit = PreimageByteDeposit;
 }
 
+impl ip_staking::Config for Runtime {
+    type Event = Event;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -1176,6 +1183,7 @@ construct_runtime!(
         // InvArch stuff
         Ipf: ipf::{Pallet, Call, Storage, Event<T>} = 70,
         INV4: inv4::{Pallet, Call, Storage, Event<T>} = 71,
+        IpStaking: ip_staking::{Pallet, Call, Storage, Event<T>} = 72,
 
         Uniques: pallet_uniques::{Pallet, Storage, Event<T>} = 80,
         RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage} = 81,
