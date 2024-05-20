@@ -102,6 +102,12 @@ use common_types::*;
 mod assets;
 mod fee_handling;
 use fee_handling::TnkrToKsm;
+mod governance;
+pub use governance::{
+    pallet_custom_origins, CouncilAdmin, CouncilApproveOrigin, CouncilRejectOrigin,
+    GeneralManagement, ReferendumCanceller, ReferendumKiller, RootOrGeneralManagement,
+    TreasurySpender, WhitelistedCaller,
+};
 mod inflation;
 mod inv4;
 // mod migrations;
@@ -371,7 +377,7 @@ impl pallet_maintenance_mode::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type NormalCallFilter = BaseFilter;
     type MaintenanceCallFilter = MaintenanceFilter;
-    type MaintenanceOrigin = EnsureRoot<AccountId>;
+    type MaintenanceOrigin = RootOrGeneralManagement;
     type XcmExecutionManager = ();
 }
 
@@ -599,13 +605,10 @@ parameter_types! {
     pub const ExecutiveBody: BodyId = BodyId::Executive;
 }
 
-// We allow root only to execute privileged collator selection operations.
-pub type CollatorSelectionUpdateOrigin = EnsureRoot<AccountId>;
-
 impl pallet_collator_selection::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
-    type UpdateOrigin = CollatorSelectionUpdateOrigin;
+    type UpdateOrigin = RootOrGeneralManagement;
     type PotId = PotId;
     type MaxCandidates = MaxCandidates;
     type MinEligibleCollators = MinCandidates;
@@ -637,6 +640,7 @@ parameter_types! {
     pub const ProposalBondMinimum: Balance = 100 * UNIT;
     pub const SpendPeriod: BlockNumber = DAYS;
     pub const PayoutSpendPeriod: BlockNumber = 30 * DAYS;
+    pub const ProposalBondMaximum: Balance = 50_000 * UNIT;
     pub const Burn: Permill = Permill::from_percent(1);
     pub const TreasuryPalletId: PalletId = PalletId(*b"ia/trsry");
     pub const MaxApprovals: u32 = 100;
@@ -649,10 +653,10 @@ parameter_types! {
 impl pallet_treasury::Config for Runtime {
     type PalletId = TreasuryPalletId;
     type Currency = Balances;
-    type ApproveOrigin = EnsureRoot<AccountId>;
-    type RejectOrigin = EnsureRoot<AccountId>;
+    type ApproveOrigin = CouncilApproveOrigin;
+    type RejectOrigin = CouncilRejectOrigin;
     type RuntimeEvent = RuntimeEvent;
-    type OnSlash = ();
+    type OnSlash = Treasury;
     type ProposalBond = ProposalBond;
     type ProposalBondMinimum = ProposalBondMinimum;
     type SpendPeriod = SpendPeriod;
@@ -661,8 +665,8 @@ impl pallet_treasury::Config for Runtime {
     type SpendFunds = ();
     type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
     type MaxApprovals = MaxApprovals;
-    type ProposalBondMaximum = ();
-    type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
+    type ProposalBondMaximum = ProposalBondMaximum;
+    type SpendOrigin = TreasurySpender;
     type AssetKind = ();
     type Beneficiary = AccountId;
     type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
@@ -775,10 +779,10 @@ parameter_types! {
 impl pallet_identity::Config for Runtime {
     type Currency = Balances;
     type RuntimeEvent = RuntimeEvent;
-    type ForceOrigin = EnsureRoot<AccountId>;
+    type ForceOrigin = RootOrGeneralManagement;
     type MaxRegistrars = MaxRegistrars;
     type MaxSubAccounts = MaxSubAccounts;
-    type RegistrarOrigin = EnsureRoot<AccountId>;
+    type RegistrarOrigin = RootOrGeneralManagement;
     type Slashed = Treasury;
     type SubAccountDeposit = SubAccountDeposit;
     type WeightInfo = ();
@@ -880,6 +884,14 @@ construct_runtime_modified!(
         AssetRegistry: orml_asset_registry = 94,
         Currencies: orml_currencies = 95,
         Tokens: orml_tokens = 96,
+
+        // Governance
+        Council: pallet_collective::<Instance1> = 100,
+        Referenda: pallet_referenda = 101,
+        ConvictionVoting: pallet_conviction_voting = 102,
+        Origins: governance::pallet_custom_origins = 103,
+        Whitelist: pallet_whitelist = 104,
+
     }
 );
 
