@@ -549,7 +549,8 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type OnSystemEvent = ();
     type SelfParaId = parachain_info::Pallet<Runtime>;
-    type DmpQueue = frame_support::traits::EnqueueWithOrigin<MessageQueue, xcm_config::RelayOrigin>;
+    type DmpQueue =
+        frame_support::traits::EnqueueWithOrigin<MessageQueue, xcm_config::RelayAggregate>;
     type ReservedDmpWeight = ReservedDmpWeight;
     type OutboundXcmpMessageSource = XcmpQueue;
     type XcmpMessageHandler = XcmpQueue;
@@ -646,6 +647,23 @@ parameter_types! {
     pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account_truncating();
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_treasury::ArgumentsFactory;
+
+#[cfg(feature = "runtime-benchmarks")]
+pub struct BenchmarkHelper;
+
+#[cfg(feature = "runtime-benchmarks")]
+impl ArgumentsFactory<(), AccountId> for BenchmarkHelper {
+    fn create_asset_kind(_seed: u32) -> () {
+        ()
+    }
+
+    fn create_beneficiary(seed: [u8; 32]) -> AccountId {
+        AccountId::from(seed)
+    }
+}
+
 impl pallet_treasury::Config for Runtime {
     type PalletId = TreasuryPalletId;
     type Currency = Balances;
@@ -669,6 +687,8 @@ impl pallet_treasury::Config for Runtime {
     type Paymaster = PayFromAccount<Balances, TreasuryAccount>;
     type BalanceConverter = UnityAssetBalanceConversion;
     type PayoutPeriod = PayoutSpendPeriod;
+    #[cfg(feature = "runtime-benchmarks")]
+    type BenchmarkHelper = BenchmarkHelper;
 }
 
 parameter_types! {
@@ -739,7 +759,7 @@ impl pallet_scheduler::Config for Runtime {
     type MaximumWeight = MaximumSchedulerWeight;
     type ScheduleOrigin = EnsureRoot<AccountId>;
     type MaxScheduledPerBlock = MaxScheduledPerBlock;
-    type WeightInfo = ();
+    type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
     type OriginPrivilegeCmp = EqualPrivilegeOnly;
     type Preimages = Preimage;
 }
@@ -751,7 +771,7 @@ parameter_types! {
 }
 
 impl pallet_preimage::Config for Runtime {
-    type WeightInfo = ();
+    type WeightInfo = pallet_preimage::weights::SubstrateWeight<Runtime>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type ManagerOrigin = EnsureRoot<AccountId>;
@@ -781,7 +801,7 @@ impl pallet_identity::Config for Runtime {
     type RegistrarOrigin = EnsureRoot<AccountId>;
     type Slashed = Treasury;
     type SubAccountDeposit = SubAccountDeposit;
-    type WeightInfo = ();
+    type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
     type BasicDeposit = BasicDeposit;
     type ByteDeposit = ByteDeposit;
     type IdentityInformation = IdentityInfo<MaxAdditionalFields>;
@@ -806,7 +826,7 @@ impl pallet_multisig::Config for Runtime {
     type DepositBase = DepositBase;
     type DepositFactor = DepositFactor;
     type MaxSignatories = MaxSignatories;
-    type WeightInfo = ();
+    type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
 }
 
 use new_modified_construct_runtime::construct_runtime_modified;
@@ -894,7 +914,6 @@ mod benches {
         [cumulus_pallet_xcmp_queue, XcmpQueue]
         [pallet_inv4, INV4]
         [pallet_ocif_staking, OcifStaking]
-        [pallet_rings, Rings]
         [pallet_checked_inflation, CheckedInflation]
     );
 }
